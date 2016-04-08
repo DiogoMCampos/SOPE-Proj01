@@ -4,8 +4,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <string.h>
-# include <unistd.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
 int main(int argc, char *argv[])
 {
@@ -28,8 +29,6 @@ int main(int argc, char *argv[])
         return 2;
     }
     
-    printf("%s\n", argv[1]);
-    
     while((d = readdir( dirp)) != NULL)
     {
 
@@ -45,11 +44,15 @@ int main(int argc, char *argv[])
         
         if (S_ISREG(s.st_mode)) 
         {
-            printf(" %-20s - %s\n", d->d_name, "regular");
+            int f = open("files.txt",  O_WRONLY | O_CREAT | O_EXCL , S_IRUSR | S_IWUSR | S_IXUSR);
+            sprintf(n, "%-25s %-20s %-8d %-10d %-10d\n", d->d_name, argv[1], (int)s.st_size, s.st_mode, (int)s.st_mtime);
+            dup2(f,STDOUT_FILENO);
+            printf("%s", n);
+            close(f);
         }
         else if (S_ISDIR(s.st_mode))
         {
-            if (!((strcmp(d->d_name, ".") == 0) || (strcmp(d->d_name, "..") == 0)))
+            if (!((strcmp(d->d_name, ".") == 0) || (strcmp(d->d_name, "..")  == 0) || (strcmp(d->d_name, ".git")  == 0)))
             {
                 if (fork() == 0)
                 {
@@ -64,7 +67,13 @@ int main(int argc, char *argv[])
         }
     }
     
-    printf("\n");
+    int f = open("files.txt", O_RDWR | O_CREAT , S_IRUSR | S_IWUSR | S_IXUSR);
+    dup2(f,STDIN_FILENO);
+    close(f);
+    f = open("files.txt", O_RDWR | O_CREAT , S_IRUSR | S_IWUSR | S_IXUSR);
+    dup2(f,STDOUT_FILENO);
+    execlp("sort", "sort", "files.txt", NULL);
+    close(f);
     
     closedir(dirp);
     return 0;
