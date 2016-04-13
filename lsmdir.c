@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
           if (S_ISREG(s.st_mode))
           {
               int f = open("filestemp.txt", O_WRONLY | O_APPEND);
-              sprintf(n, "%-25s %-20s %-8d %-10d %-10d\n", d->d_name, argv[1], (int)s.st_size, s.st_mode, (int)s.st_mtime);
+              sprintf(n, "%s|%d|%d|%d|%s\n", d->d_name, (int)s.st_size, s.st_mode, (int)s.st_mtime, argv[1]);
               dup2(f, STDOUT_FILENO);
               printf("%s", n);
               close(f);
