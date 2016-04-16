@@ -252,7 +252,7 @@ int main(int argc, char* argv[]) {
         exit(5);
     }
     else if (pid == 0) {
-        execlp("./lsmdir","./lsmdir", argv[1], NULL);
+        execlp("./lsdir","./lsdir", argv[1], NULL);
     }
     else {
         waitpid(pid, NULL, 0);

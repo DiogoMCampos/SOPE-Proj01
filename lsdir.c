@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
               }
 
               else if (pid == 0) {
-                  execl("./lsmdir","./lsmdir", n , NULL);
+                  execl("./lsdir","./lsdir", n , NULL);
               }
 
               else {
