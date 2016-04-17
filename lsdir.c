@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 
     while((d = readdir(dirp)) != NULL)
     {
+
         char n[200];
         sprintf(n, "%s/%s", argv[1], d->d_name);
 
@@ -41,31 +42,37 @@ int main(int argc, char *argv[])
             exit(3);
         }
 
-        if (!(d->d_name[0] == '.' || strcmp(d->d_name, "files.txt") == 0 || strcmp(d->d_name, "filestemp.txt") == 0))
+        // checks whether it's possible to access the specific file/directory or not
+        if (access(n, R_OK) == -1)
         {
-          if (S_ISREG(s.st_mode))
-          {
-              int f = open("filestemp.txt", O_WRONLY | O_APPEND);
-              sprintf(n, "%s|%d|%d|%d|%s\n", d->d_name, (int)s.st_size, s.st_mode, (int)s.st_mtime, argv[1]);
-              dup2(f, STDOUT_FILENO);
-              printf("%s", n);
-              close(f);
-          }
-          else if (S_ISDIR(s.st_mode))
-          {
-              if ((pid = fork()) < 0) {
-                perror("fork");
-                exit(4);
-              }
+            perror(n);
+        }
 
-              else if (pid == 0) {
-                  execl("./lsdir","./lsdir", n , NULL);
-              }
+        else if (!(d->d_name[0] == '.' || strcmp(d->d_name, "files.txt") == 0 || strcmp(d->d_name, "filestemp.txt") == 0))
+        {
+            if (S_ISREG(s.st_mode))
+            {
+                int f = open("filestemp.txt", O_WRONLY | O_APPEND);
+                sprintf(n, "%s|%d|%d|%d|%s\n", d->d_name, (int)s.st_size, s.st_mode, (int)s.st_mtime, argv[1]);
+                dup2(f, STDOUT_FILENO);
+                printf("%s", n);
+                close(f);
+            }
+            else if (S_ISDIR(s.st_mode))
+            {
+                if ((pid = fork()) < 0) {
+                  perror("fork");
+                  exit(5);
+                }
 
-              else {
-                waitpid(pid, NULL, 0);
-              }
-          }
+                else if (pid == 0) {
+                    execl("./lsdir","./lsdir", n , NULL);
+                }
+
+                else {
+                  waitpid(pid, NULL, 0);
+                }
+            }
         }
     }
 
